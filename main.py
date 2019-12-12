@@ -10,12 +10,19 @@ from email.mime.text import MIMEText
 
 # POP3 Server (default: gmail)
 SERVER_POP3 = "pop.gmail.com"
+# SMTP Server
+SERVER_SMTP = "smtp.gmail.com"
 # USERNAME 
-#USER  = ""
+USER  = ""
 # PASSWORD
 PASSWORD = ""
 
-runFlag = 1
+if USER and PASSWORD:
+    runFlag = 1
+else:
+    print("Username and password required. Exiting...")
+    exit()
+
 while runFlag:
     
     # connect to server
@@ -28,6 +35,7 @@ while runFlag:
     server.pass_(PASSWORD)
 
     # list items on server
+    # for gmail: it should list only unread messages once
     logging.debug('listing emails')
     resp, items, octets = server.list()
     index = len(items)
@@ -42,7 +50,7 @@ while runFlag:
     raw_email  = b"\n".join(server.retr(index)[1])
     parsed_email = email.message_from_bytes(raw_email)
 
-    # E-mail data
+    # e-mail data
     oggetto = parsed_email['Subject']
     contenuto = parsed_email.get_payload()
 
@@ -53,13 +61,11 @@ while runFlag:
 if oggetto != '[My Filter]':
     exit()    
 
-# Set a filter on the sender
-if parsed_email['From'] != 'foo.bar@test.com':
-  exit()
+# Set a filter on the sender (optional)
+#if parsed_email['From'] != 'foo.bar@test.com':
+#  exit()
 
 # Forward the (right) e-mail!
-SERVER_SMTP = "smtp.gmail.com"
-
 # SMTP connection
 server = smtplib.SMTP_SSL(SERVER_SMTP, 465)
 server.login(USER,PASSWORD)
